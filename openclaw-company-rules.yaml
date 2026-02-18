@@ -1,143 +1,147 @@
 # ============================================================================
 # OpenClaw Company Rules — GLXY / attractsoft
 # ============================================================================
-# 
-# Dieses File definiert firmenweite Regeln für alle OpenClaw-Instanzen.
-# Es enthält KEINE persönlichen Daten, Tokens oder individuellen Preferences.
 #
-# Verwendung:
-#   1. Neue Instanz aufsetzen → Regeln aus diesem File in AGENTS.md übernehmen
-#   2. Regel-Update → File auf GitHub aktualisieren, alle Instanzen synchronisieren
-#   3. Export → Jede Instanz kann ihre Regeln in dieses Format exportieren
+# Company-wide rules for all OpenClaw instances.
+# Contains NO personal data, tokens, or individual preferences.
 #
-# GitHub: attractsoft/openclaw-company-rules (oder in einem shared Repo)
+# This file only includes rules that go BEYOND OpenClaw's built-in defaults.
+# Things like memory management, heartbeat behavior, group chat etiquette,
+# platform formatting, and workspace structure are already handled by OpenClaw
+# out of the box and are NOT repeated here.
+#
+# Usage:
+#   1. New instance → import rules from this file into AGENTS.md
+#   2. Rule update  → update this file on GitHub, sync all instances
+#   3. Export       → any instance can export its rules back to this format
+#
+# GitHub: raitschin/openclaw-setup-rules
 # ============================================================================
 
-version: "1.2.0"
+version: "2.0.0"
 last_updated: "2026-02-18"
-updated_by: "Clark (Raitschin's Instance)"
+updated_by: "Clark (initial export)"
 organization: "GLXY / attractsoft"
 
 # ============================================================================
 # SECTION 1: Deployment Rules
 # ============================================================================
 deployment:
-  description: "Regeln für Production und Staging Deployments"
-  severity: CRITICAL  # CRITICAL = keine Ausnahmen, HIGH = wichtig, MEDIUM = empfohlen
+  description: "Production and staging deployment guardrails"
+  severity: CRITICAL
 
   rules:
     - id: DEPLOY-001
-      name: "Production Deployment erfordert explizite Freigabe"
+      name: "Production deployment requires explicit approval"
       rule: |
-        NIEMALS auf Production deployen ohne AUSDRÜCKLICHE Freigabe des zuständigen Owners.
-        - Kein Push auf `main` Branch ohne Freigabe
-        - Kein Production Deploy Hook triggern ohne Freigabe
-        - Kein `merge` nach `main` ohne Freigabe
-        - Keine Ausnahmen. Keine "ist ja nur ein kleiner Fix". KEINE.
+        NEVER deploy to production without EXPLICIT approval from the responsible owner.
+        - No push to `main` branch without approval
+        - No production deploy hook without approval
+        - No merge to `main` without approval
+        - No exceptions. Not even "it's just a small fix". NONE.
       severity: CRITICAL
 
     - id: DEPLOY-002
-      name: "Staging First"
+      name: "Staging first"
       rule: |
-        IMMER auf `staging` arbeiten und deployen.
-        Erst nach erfolgreichem Test auf Staging UND ausdrücklicher Bestätigung
-        des zuständigen Owners darf nach Production deployed werden.
-        Workflow: staging Branch → testen → PR/merge nach main → production
+        ALWAYS work on and deploy to `staging` first.
+        Only after successful testing on staging AND explicit confirmation
+        from the owner may production be deployed.
+        Workflow: staging branch → test → PR/merge to main → production
       severity: CRITICAL
 
     - id: DEPLOY-003
-      name: "Deploy Hooks"
+      name: "Verify deployments"
       rule: |
-        GitHub Webhooks funktionieren nicht immer automatisch.
-        Deploy Hooks bei Bedarf manuell triggern und Deployment verifizieren.
+        GitHub webhooks don't always trigger automatically.
+        Manually trigger deploy hooks when needed and verify the deployment succeeded.
       severity: HIGH
 
 # ============================================================================
-# SECTION 2: Development Workflow (BMad-Methode)
+# SECTION 2: Development Workflow (BMad Method)
 # ============================================================================
 development:
-  description: "Entwicklungs-Workflow nach BMad-Methode — gilt für ALLE Projekte"
+  description: "Development workflow following the BMad method — applies to ALL projects"
   severity: CRITICAL
 
   rules:
     - id: DEV-001
-      name: "Kein Code ohne Issue"
+      name: "No code without an issue"
       rule: |
-        Keine einzige Zeile Code darf geschrieben werden, bevor ein GitHub Issue existiert.
-        Das gilt für ALLE Repos, ALLE Änderungen — Features, Bugfixes, Refactoring, Cleanup.
-        Auch Subagents müssen zuerst ein Issue haben, bevor sie implementieren.
-        Keine Ausnahmen. Kein "ich mach das schnell mal eben".
+        Not a single line of code may be written before a GitHub issue exists.
+        This applies to ALL repos, ALL changes — features, bugfixes, refactoring, cleanup.
+        Sub-agents must also have an issue before they implement anything.
+        No exceptions. No "let me just quickly do this".
       severity: CRITICAL
 
     - id: DEV-002
-      name: "Issue-Templates verwenden"
+      name: "Use issue templates"
       rule: |
-        Jedes Issue MUSS aus einem Template erstellt werden:
+        Every issue MUST be created from a template:
         - Feature: `.github/ISSUE_TEMPLATE/feature.md`
         - Bug: `.github/ISSUE_TEMPLATE/bug.md`
         - Change Request: `.github/ISSUE_TEMPLATE/change-request.md`
-        Alternativ aus zentralen Templates (z.B. Obsidian Vault).
         Labels: `feature`, `bug`, `epic`, `marketing`
       severity: HIGH
 
     - id: DEV-003
-      name: "BMad Planung (Top-Down)"
+      name: "BMad planning (top-down)"
       rule: |
-        Jede Entwicklung folgt dieser Struktur:
-        1. Epic erstellen → enthält alle Stories
-        2. Stories aus Epic ableiten → klare User Stories mit Akzeptanzkriterien
-        3. Tasks pro Story definieren → konkrete technische Aufgaben
-        4. Issues pro Task erstellen → aus Templates, mit `ref #Epic`
+        Every development follows this structure:
+        1. Create Epic → contains all stories
+        2. Derive Stories from Epic → clear user stories with acceptance criteria
+        3. Define Tasks per Story → concrete technical tasks
+        4. Create Issues per Task → from templates, with `ref #Epic`
       severity: HIGH
 
     - id: DEV-004
       name: "TDD — Red-Green-Refactor"
       rule: |
-        Test-Driven Development ist Pflicht:
-        🔴 RED: Tests ZUERST schreiben — Tests müssen FEHLSCHLAGEN
-        🟢 GREEN: Minimalen Code implementieren bis alle Tests grün sind
-        🔵 REFACTOR: Code-Struktur verbessern, Tests müssen grün bleiben
-        Commits referenzieren das Issue (`fixes #123`, `ref #123`)
+        Test-Driven Development is mandatory:
+        🔴 RED: Write tests FIRST — tests must FAIL (validates test correctness)
+        🟢 GREEN: Write minimal code until all tests pass
+        🔵 REFACTOR: Improve code structure, tests must stay green
+        Commits reference the issue (`fixes #123`, `ref #123`)
       severity: CRITICAL
 
     - id: DEV-005
-      name: "Code Review"
+      name: "Code review"
       rule: |
-        - Code Review ist Pflicht vor merge
-        - Prüfung: Logik, Edge Cases, Security, Performance
-        - Alle Tests laufen lassen — keine Regressionen
-        - Bei UI/Frontend-Änderungen: Browser-Test anbieten
-        - Idealerweise: Review mit einem ANDEREN LLM als dem Implementierer
+        - Code review is mandatory before merge
+        - Check: logic, edge cases, security, performance
+        - Run all tests — no regressions, all new tests green
+        - For UI/frontend changes: offer browser testing
+        - Ideally: review with a DIFFERENT LLM than the one that implemented
       severity: HIGH
 
     - id: DEV-006
-      name: "Definition of Done (pro Story)"
+      name: "Definition of Done (per story)"
       rule: |
-        Eine Story gilt erst als fertig, wenn:
-        - [ ] Alle Tasks/Subtasks abgehakt
-        - [ ] Alle Acceptance Criteria erfüllt
-        - [ ] Unit Tests für Kernfunktionalität
-        - [ ] Integration Tests wo nötig
-        - [ ] Alle Tests grün (keine Regressionen)
-        - [ ] File List vollständig
-        - [ ] Dev Agent Record dokumentiert
-        - [ ] Change Log aktualisiert
+        A story is only done when:
+        - [ ] All tasks/subtasks checked off
+        - [ ] All acceptance criteria met
+        - [ ] Unit tests for core functionality
+        - [ ] Integration tests where needed
+        - [ ] All tests green (no regressions)
+        - [ ] File list complete
+        - [ ] Dev agent record documented
+        - [ ] Change log updated
       severity: HIGH
 
     - id: DEV-007
-      name: "Commit-Messages"
+      name: "Commit messages reference issues"
       rule: |
-        Jeder Commit MUSS das zugehörige Issue referenzieren:
-        - `fixes #XX` — wenn der Commit das Issue schließt
-        - `ref #XX` — wenn der Commit zum Issue beiträgt
-        Keine Commits ohne Issue-Referenz.
+        Every commit MUST reference its associated issue:
+        - `fixes #XX` — when the commit closes the issue
+        - `ref #XX` — when the commit contributes to the issue
+        No commits without issue references.
       severity: HIGH
 
 # ============================================================================
-# SECTION 3: BMad Workflow-Dateien
+# SECTION 3: BMad Workflow Files
 # ============================================================================
 bmad:
-  description: "BMad-Methode Dateipfade und Workflow-Struktur"
+  description: "BMad method file paths and workflow structure (relative to project root)"
 
   paths:
     workflow_engine: "_bmad/core/tasks/workflow.xml"
@@ -152,248 +156,92 @@ bmad:
     quick_dev: ".claude/commands/bmad-agent-bmm-quick-flow-solo-dev.md"
 
   subagent_spawn_template: |
-    Implementiere GitHub Issue #XX für Repo {repo} (Pfad: {pfad}).
+    Implement GitHub Issue #XX for repo {repo} (path: {path}).
 
-    **PFLICHT: BMad Dev-Story Workflow befolgen!**
-    1. Lies die Story-Datei: `_bmad-output/implementation-artifacts/{story-file}.md`
-    2. Lies die BMad-Config: `_bmad/bmm/config.yaml`
-    3. Befolge den dev-story Workflow: `_bmad/bmm/workflows/4-implementation/dev-story/instructions.xml`
-    4. Kommuniziere auf Deutsch (communication_language: German)
+    **MANDATORY: Follow BMad Dev-Story Workflow!**
+    1. Read story file: `_bmad-output/implementation-artifacts/{story-file}.md`
+    2. Read BMad config: `_bmad/bmm/config.yaml`
+    3. Follow dev-story workflow: `_bmad/bmm/workflows/4-implementation/dev-story/instructions.xml`
 
-    **TDD ist Pflicht (Red-Green-Refactor):**
-    - 🔴 RED: Tests ZUERST schreiben — Tests MÜSSEN fehlschlagen
-    - 🟢 GREEN: Minimalen Code bis Tests grün
-    - 🔵 REFACTOR: Code verbessern, Tests bleiben grün
+    **TDD is mandatory (Red-Green-Refactor):**
+    - 🔴 RED: Write tests FIRST — tests MUST fail
+    - 🟢 GREEN: Minimal code until tests pass
+    - 🔵 REFACTOR: Improve code, tests stay green
 
-    **Am Ende:**
-    - Alle Tasks/Subtasks in Story-File abhaken
-    - File List aktualisieren
-    - Dev Agent Record ausfüllen
-    - Story-Status auf "review" setzen
-    - Commit mit `ref #XX` oder `fixes #XX`
+    **When done:**
+    - Check off all tasks/subtasks in story file
+    - Update file list
+    - Fill in dev agent record
+    - Set story status to "review"
+    - Commit with `ref #XX` or `fixes #XX`
 
-    Kontext: {relevante technische Details}
+    Context: {relevant technical details}
 
   workflow_phases:
     phase_1_planning: |
-      Vor dem Spawnen (Agent selbst):
-      1. GitHub Issue aus Template erstellen
-      2. Story-File erstellen unter `_bmad-output/implementation-artifacts/`
-      3. Sprint-Status updaten falls vorhanden
+      Before spawning (agent itself):
+      1. Create GitHub issue from template
+      2. Create story file under `_bmad-output/implementation-artifacts/`
+      3. Update sprint status if applicable
 
     phase_2_implementation: |
-      Subagent mit obigem Template spawnen.
-      Subagent folgt BMad dev-story Workflow autonom.
+      Spawn sub-agent with the template above.
+      Sub-agent follows BMad dev-story workflow autonomously.
 
     phase_3_review: |
-      Nach dem Spawnen (Agent selbst):
-      1. Code Review durchführen (idealerweise anderes LLM)
-      2. Auf staging pushen + deployen
-      3. Owner zum Testen auffordern
-      4. Nach erfolgreichem Test: merge nach main → production
+      After spawning (agent itself):
+      1. Perform code review (ideally with a different LLM)
+      2. Push to staging and deploy
+      3. Ask owner to test
+      4. After successful test: merge to main → production
 
 # ============================================================================
-# SECTION 4: Safety & Permissions
+# SECTION 4: Group Scopes
 # ============================================================================
-safety:
-  description: "Sicherheitsregeln für alle Instanzen"
+group_scopes:
+  description: "Every group chat has a defined scope. The agent must stay within it."
+  severity: CRITICAL
 
   rules:
-    - id: SAFE-001
-      name: "Keine Daten-Exfiltration"
-      rule: "Private Daten niemals nach außen geben. Keine Ausnahmen."
+    - id: SCOPE-001
+      name: "Read scope before responding"
+      rule: |
+        Every group chat has a scope file under `scopes/`.
+        Before answering in ANY group:
+        1. Read the scope file for that group's Chat-ID
+        2. Check if the request falls within the allowed scope
+        3. If NOT in scope → politely decline and redirect to the correct group
+        4. NEVER share data from other projects or private user context
       severity: CRITICAL
 
-    - id: SAFE-002
-      name: "Recoverable over Gone"
-      rule: "`trash` > `rm` — Wiederherstellbar ist immer besser als weg."
+    - id: SCOPE-002
+      name: "Scope file structure"
+      rule: |
+        Each scope file must define:
+        - Chat-ID: the group identifier
+        - Purpose: what the group is for (one sentence)
+        - Allowed: list of permitted activities and repos
+        - Forbidden: list of explicitly prohibited activities
+        - Context Files: paths the agent may reference for this group
       severity: HIGH
 
-    - id: SAFE-003
-      name: "Destruktive Commands"
-      rule: "Keine destruktiven Commands ohne vorherige Bestätigung des Users."
+    - id: SCOPE-003
+      name: "Adding new groups"
+      rule: |
+        When creating a new group:
+        1. Create scope file under `scopes/group-{name}.md`
+        2. Add Chat-ID to OpenClaw config (channels.telegram.groups)
+        3. Add reference to AGENTS.md group scopes section
+        4. Commit scope file to the company rules repo
       severity: HIGH
 
-    - id: SAFE-004
-      name: "Externe Aktionen"
-      rule: |
-        Immer erst fragen vor:
-        - Emails, Tweets, öffentliche Posts senden
-        - Alles was die Maschine verlässt
-        - Alles wo Unsicherheit besteht
-      severity: HIGH
-
-    - id: SAFE-005
-      name: "MEMORY.md Schutz"
-      rule: |
-        MEMORY.md nur in Main Session (direkter Chat mit dem eigenen User) laden.
-        NICHT in Gruppenchats oder geteilten Kontexten — enthält persönliche Daten.
-      severity: CRITICAL
+  file_convention: "scopes/group-{project}-{purpose}.md"
 
 # ============================================================================
-# SECTION 5: Group Chat Behavior
-# ============================================================================
-group_chat:
-  description: "Verhaltensregeln in Gruppenchats"
-
-  rules:
-    - id: GROUP-001
-      name: "Teilnehmen, nicht dominieren"
-      rule: |
-        In Gruppenchats bist du ein Teilnehmer — nicht Proxy für deinen User.
-        Keine privaten Informationen deines Users teilen.
-      severity: HIGH
-
-    - id: GROUP-002
-      name: "Wann sprechen"
-      respond_when:
-        - "Direkt angesprochen oder gefragt"
-        - "Echten Mehrwert beitragen (Info, Insight, Hilfe)"
-        - "Etwas Witziges/Passendes natürlich reinpasst"
-        - "Wichtige Fehlinformationen korrigieren"
-        - "Zusammenfassung angefragt"
-      stay_silent_when:
-        - "Nur lockerer Banter zwischen Menschen"
-        - "Jemand hat die Frage schon beantwortet"
-        - "Antwort wäre nur 'ja' oder 'nice'"
-        - "Gespräch läuft gut ohne dich"
-        - "Nachricht würde den Flow unterbrechen"
-
-    - id: GROUP-003
-      name: "Human Rule"
-      rule: |
-        Menschen antworten nicht auf jede einzelne Nachricht. Du auch nicht.
-        Qualität > Quantität. Wenn du es nicht in einem echten Gruppenchat
-        mit Freunden senden würdest, sende es nicht.
-      severity: MEDIUM
-
-    - id: GROUP-004
-      name: "Reactions"
-      rule: |
-        Reactions sparsam und natürlich einsetzen:
-        - Anerkennung ohne Reply (👍, ❤️, 🙌)
-        - Humor (😂, 💀)
-        - Interesse (🤔, 💡)
-        - Bestätigung (✅, 👀)
-        Max eine Reaction pro Nachricht. Nicht übertreiben.
-      severity: MEDIUM
-
-# ============================================================================
-# SECTION 6: Memory System
-# ============================================================================
-memory:
-  description: "Wie der Agent sein Gedächtnis verwaltet"
-
-  rules:
-    - id: MEM-001
-      name: "Aufschreiben statt merken"
-      rule: |
-        Memory ist begrenzt — wenn du etwas behalten willst, schreib es in eine Datei.
-        "Mental notes" überleben keinen Session-Restart. Files schon.
-        - "Remember this" → memory/YYYY-MM-DD.md oder relevante Datei updaten
-        - Lesson learned → AGENTS.md, TOOLS.md oder relevanten Skill updaten
-        - Fehler gemacht → dokumentieren, damit zukünftiges Ich es nicht wiederholt
-      severity: HIGH
-
-    - id: MEM-002
-      name: "Daily Notes"
-      rule: |
-        Tägliche Notizen unter `memory/YYYY-MM-DD.md`.
-        Raw Logs von dem was passiert ist.
-        Verzeichnis `memory/` erstellen falls nötig.
-      severity: MEDIUM
-
-    - id: MEM-003
-      name: "Long-Term Memory"
-      rule: |
-        MEMORY.md = kuratiertes Langzeitgedächtnis.
-        Regelmäßig Daily Notes reviewen und Wichtiges nach MEMORY.md destillieren.
-        Veraltete Einträge entfernen.
-      severity: MEDIUM
-
-# ============================================================================
-# SECTION 7: Workspace Structure
-# ============================================================================
-workspace:
-  description: "Standard-Workspace-Struktur für alle Instanzen"
-
-  structure:
-    projects: "projects/ — alle Code-Repos (geklont von GitHub)"
-    memory: "memory/ — Daily Notes und Agent-Gedächtnis"
-    agents_md: "AGENTS.md — Arbeitsregeln und Workflow (importiert aus Company Rules)"
-    soul_md: "SOUL.md — Persönlichkeit des Agents (individuell)"
-    user_md: "USER.md — Info über den zugewiesenen User (individuell)"
-    tools_md: "TOOLS.md — Tool-Notizen und Credentials-Referenzen (individuell)"
-    memory_md: "MEMORY.md — Langzeitgedächtnis (individuell, privat)"
-    projects_md: "PROJECTS.md — Übersicht aktiver Projekte"
-
-  conventions:
-    - "Code-Repos IMMER unter `projects/` klonen — nie im Workspace-Root"
-    - "Obsidian Vault und Code-Repos getrennt halten (Indexierung, nested git)"
-    - "`projects/`, `memory/`, Agent-Config-Files in `.gitignore` wenn Workspace ein Git-Repo ist"
-
-# ============================================================================
-# SECTION 8: Heartbeats & Proactive Work
-# ============================================================================
-heartbeats:
-  description: "Regeln für proaktives Arbeiten zwischen Nachrichten"
-
-  checks:
-    - "Emails — dringende ungelesene Nachrichten?"
-    - "Kalender — anstehende Events in 24-48h?"
-    - "Mentions — Social-Media-Benachrichtigungen?"
-    - "Wetter — relevant wenn User unterwegs sein könnte?"
-
-  frequency: "2-4x pro Tag, rotierend"
-
-  reach_out_when:
-    - "Wichtige Email eingetroffen"
-    - "Kalender-Event kommt (<2h)"
-    - "Etwas Interessantes gefunden"
-    - ">8h seit letztem Kontakt"
-
-  stay_quiet_when:
-    - "Nachts (23:00-08:00) außer dringend"
-    - "User ist offensichtlich beschäftigt"
-    - "Nichts Neues seit letztem Check"
-    - "Letzter Check <30 Minuten her"
-
-  proactive_work:
-    - "Memory-Dateien lesen und organisieren"
-    - "Projekte checken (git status etc.)"
-    - "Dokumentation aktualisieren"
-    - "Eigene Änderungen committen und pushen"
-    - "MEMORY.md reviewen und aktualisieren"
-
-  heartbeat_vs_cron:
-    use_heartbeat: "Batch-Checks, konversationaler Kontext nötig, Timing kann driften"
-    use_cron: "Exaktes Timing, isolierte Tasks, anderes Modell, One-Shot Reminders"
-
-# ============================================================================
-# SECTION 9: Platform Formatting
-# ============================================================================
-formatting:
-  description: "Plattform-spezifische Formatierung"
-
-  rules:
-    - platform: "Discord"
-      guidelines:
-        - "Keine Markdown-Tabellen — Bullet Lists verwenden"
-        - "Mehrere Links in `<>` wrappen um Embeds zu unterdrücken"
-    - platform: "WhatsApp"
-      guidelines:
-        - "Keine Headers — **bold** oder CAPS für Hervorhebung"
-        - "Keine Markdown-Tabellen"
-    - platform: "Telegram"
-      guidelines:
-        - "Markdown unterstützt (bold, italic, code, links)"
-        - "Reactions sparsam einsetzen (MINIMAL mode)"
-
-# ============================================================================
-# SECTION 10: Security Tooling
+# SECTION 5: Security Tooling
 # ============================================================================
 security_tooling:
-  description: "Firmenweite Security-Scan-Tools — auf jeder Instanz installiert"
+  description: "Company-wide security scanning tools"
 
   tools:
     - name: "Semgrep"
@@ -414,46 +262,45 @@ security_tooling:
     - name: "Snyk"
       type: "SCA (Software Composition Analysis) + SAST"
       install: "npm install -g snyk"
-      auth: "snyk auth (Browser-OAuth oder API-Token)"
+      auth: "snyk auth (browser OAuth or API token)"
       usage:
         dependency_scan: "snyk test"
         code_scan: "snyk code test"
         monitor: "snyk monitor"
-        container: "snyk container test <image>"
 
   rules:
     - id: SEC-001
-      name: "Security Scan vor Merge"
+      name: "Security scan before merge"
       rule: |
-        Vor jedem Merge nach staging oder main:
-        - Semgrep SAST-Scan durchführen (mindestens `p/typescript` oder `--config auto`)
-        - Snyk Dependency-Scan (`snyk test`) — keine Critical/High Vulnerabilities
-        - Blocking Findings müssen behoben werden
+        Before every merge to staging or main:
+        - Run Semgrep SAST scan (at least `p/typescript` or `--config auto`)
+        - Run Snyk dependency scan (`snyk test`) — no critical/high vulnerabilities
+        - Blocking findings must be resolved
       severity: HIGH
 
     - id: SEC-002
-      name: "Regelmäßige Scans"
+      name: "Regular scans"
       rule: |
-        Mindestens wöchentlich:
-        - `snyk monitor` auf allen aktiven Repos
-        - Semgrep Full Scan (`--config auto`)
-        - Ergebnisse in Daily Notes dokumentieren
+        At least weekly:
+        - `snyk monitor` on all active repos
+        - Semgrep full scan (`--config auto`)
+        - Document results in daily notes
       severity: MEDIUM
 
     - id: SEC-003
-      name: "Neue Dependencies"
+      name: "New dependencies"
       rule: |
-        Bei jeder neuen Dependency:
-        - `snyk test` vor dem Commit
-        - Lizenz-Kompatibilität prüfen
-        - Bekannte Vulnerabilities checken
+        For every new dependency:
+        - Run `snyk test` before committing
+        - Check license compatibility
+        - Verify no known vulnerabilities
       severity: HIGH
 
 # ============================================================================
-# SECTION 11: GitHub Repositories
+# SECTION 6: GitHub Repositories
 # ============================================================================
 repositories:
-  description: "Firmenweite GitHub-Repos und Organisation"
+  description: "Company GitHub repos and organization"
   organization: "attractsoft"
 
   repos:
@@ -463,19 +310,19 @@ repositories:
 
     - name: "florentin-app"
       full: "attractsoft/florentin-app"
-      description: "Automatisierungs-Workflows zu API-Produkten"
+      description: "Automation workflows to API products (SaaS enabler)"
 
     - name: "anychat"
       full: "attractsoft/anychat"
-      description: "Chat-Frontend (Teil von anymize.ai)"
+      description: "Chat frontend (part of anymize.ai)"
 
     - name: "anymize"
       full: "attractsoft/anymize"
-      description: "DSGVO-konforme LLM-Anonymisierung"
+      description: "GDPR-compliant LLM anonymization"
 
     - name: "anymize-context"
       full: "attractsoft/anymize-context"
-      description: "Kontext-Repo: Roadmap, Pricing, BMad-Workflow"
+      description: "Context repo: roadmap, pricing, BMad workflow"
 
   labels:
     - "feature"
@@ -484,56 +331,36 @@ repositories:
     - "marketing"
 
 # ============================================================================
-# SECTION 11: Communication
-# ============================================================================
-communication:
-  description: "Kommunikationsregeln"
-
-  rules:
-    - id: COMM-001
-      name: "Sprache"
-      rule: "Standard: Deutsch. Wechsel zu Englisch wenn der User wechselt."
-      severity: MEDIUM
-
-    - id: COMM-002
-      name: "Stil"
-      rule: |
-        - Direkt und klar kommunizieren
-        - Keine Floskeln
-        - Hands-on: Nicht labern, machen
-        - Freundlich aber nicht schleimig
-      severity: MEDIUM
-
-    - id: COMM-003
-      name: "Erst machen, dann fragen"
-      rule: |
-        Für interne Aktionen (Dateien lesen, organisieren, recherchieren):
-        Einfach machen, keine Erlaubnis erfragen.
-        Für externe Aktionen (Emails, Posts): IMMER erst fragen.
-      severity: HIGH
-
-# ============================================================================
 # META: How to use this file
 # ============================================================================
 #
-# IMPORT (neue Instanz):
-#   1. openclaw-company-rules.yaml in den Workspace kopieren
-#   2. Agent instruieren: "Importiere die Company Rules aus openclaw-company-rules.yaml
-#      in deine AGENTS.md. Persönliche Sections (SOUL.md, USER.md) bleiben individuell."
-#   3. Agent merged die Regeln in seine AGENTS.md
+# IMPORT (new instance):
+#   1. Copy openclaw-company-rules.yaml to the workspace
+#   2. Instruct the agent:
+#      "Import the company rules from openclaw-company-rules.yaml
+#       into your AGENTS.md. Personal sections (SOUL.md, USER.md)
+#       remain individual."
+#   3. The agent merges the rules into its AGENTS.md
 #
-# EXPORT (bestehende Instanz):
-#   1. Agent instruieren: "Exportiere deine aktuellen Firmenregeln aus AGENTS.md
-#      ins openclaw-company-rules.yaml Format. Keine persönlichen Daten."
-#   2. Agent updatet openclaw-company-rules.yaml mit neuer Version
+# EXPORT (existing instance):
+#   1. Instruct the agent:
+#      "Export your current company rules from AGENTS.md
+#       to openclaw-company-rules.yaml format. No personal data."
+#   2. The agent updates openclaw-company-rules.yaml with a new version
 #
-# SYNC (Abgleich):
-#   1. Aktuelle Version von GitHub pullen
-#   2. Agent instruieren: "Gleiche deine AGENTS.md mit openclaw-company-rules.yaml ab.
-#      Zeige Differenzen. Übernimm neue Regeln, behalte persönliche Anpassungen."
-#   3. Version bumpen + committen
+# SYNC (reconcile):
+#   1. Pull current version from GitHub
+#   2. Instruct the agent:
+#      "Reconcile your AGENTS.md with openclaw-company-rules.yaml.
+#       Show differences. Adopt new rules, keep personal customizations."
+#   3. Bump version + commit
 #
 # VERSIONING:
-#   - Major: Breaking Changes (Regeln entfernt oder fundamental geändert)
-#   - Minor: Neue Regeln hinzugefügt
-#   - Patch: Klarstellungen, Formulierungen
+#   - Major: Breaking changes (rules removed or fundamentally changed)
+#   - Minor: New rules added
+#   - Patch: Clarifications, wording improvements
+#
+# IMPORTANT:
+#   When updating this file, the README.md MUST also be updated.
+#   No YAML change without a README change. The README is the
+#   human-readable documentation of all rules.
