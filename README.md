@@ -17,8 +17,9 @@ Company-wide rules for all OpenClaw agent instances. This repo is the **single s
   - [3. BMad Workflow Files](#3-bmad-workflow-files)
   - [4. Group Scopes](#4-group-scopes)
   - [5. Session Configuration](#5-session-configuration)
-  - [6. Security Tooling](#6-security-tooling)
-  - [7. GitHub Repositories](#7-github-repositories)
+  - [6. Group Memory Persistence](#6-group-memory-persistence)
+  - [7. Security Tooling](#7-security-tooling)
+  - [8. GitHub Repositories](#8-github-repositories)
 - [Import / Export / Sync](#-import--export--sync)
 - [Versioning](#-versioning)
 - [Contributing](#-contributing)
@@ -249,7 +250,35 @@ Phase 3 (Review — agent itself):
 
 ---
 
-### 6. Security Tooling
+### 6. Group Memory Persistence
+
+Gateway restarts and session resets destroy group chat context. To ensure continuity, every group gets a persistent memory file that survives any restart.
+
+**File convention:** `memory/{group-name}-context.md`
+
+**Memory file structure:**
+```markdown
+# {Group Name} — Persistent Memory
+## Active Tasks
+## Decisions & Context
+## Recent Messages (last ~30 exchanges)
+```
+
+**GMEM-001 — Every group gets a persistent memory file** `HIGH`
+> Every group chat MUST have a persistent memory file at `memory/{group-name}-context.md`. The scope file for the group MUST reference this memory file.
+
+**GMEM-002 — Read memory on session start** `CRITICAL`
+> At the START of every group session (or when the session appears empty/new), the agent MUST read the group's persistent memory file BEFORE responding. This restores context lost during session resets.
+
+**GMEM-003 — Update memory after every meaningful exchange** `HIGH`
+> After every meaningful exchange, the agent MUST update the memory file: append to "Recent Messages" (keep last ~30 exchanges), update "Active Tasks" when tasks change, update "Decisions & Context" for important decisions.
+
+**GMEM-004 — Memory file structure** `MEDIUM`
+> Each memory file must contain: Active Tasks, Decisions & Context, and Recent Messages sections.
+
+---
+
+### 7. Security Tooling
 
 | Tool | Type | Install | Usage |
 |------|------|---------|-------|
@@ -279,7 +308,7 @@ Phase 3 (Review — agent itself):
 
 ---
 
-### 7. GitHub Repositories
+### 8. GitHub Repositories
 
 **Organization:** `attractsoft`
 

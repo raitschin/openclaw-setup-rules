@@ -18,7 +18,7 @@
 # GitHub: raitschin/openclaw-setup-rules
 # ============================================================================
 
-version: "2.1.0"
+version: "2.2.0"
 last_updated: "2026-02-18"
 updated_by: "Clark (initial export)"
 organization: "GLXY / attractsoft"
@@ -267,6 +267,57 @@ session:
         session expiry. Batch config changes together when possible to
         minimize restarts and reduce the risk of session context loss.
       severity: MEDIUM
+
+# ============================================================================
+# SECTION 6: Group Memory Persistence
+# ============================================================================
+group_memory:
+  description: "Persistent memory files for group chats to survive session resets and gateway restarts"
+  severity: HIGH
+
+  rules:
+    - id: GMEM-001
+      name: "Every group gets a persistent memory file"
+      rule: |
+        Every group chat MUST have a persistent memory file at:
+          `memory/{group-name}-context.md`
+        This file survives session resets, gateway restarts, and compactions.
+        The scope file for the group MUST reference this memory file.
+      severity: HIGH
+
+    - id: GMEM-002
+      name: "Read memory on session start"
+      rule: |
+        At the START of every group session (or when the session appears
+        empty/new with no prior messages visible), the agent MUST read
+        the group's persistent memory file BEFORE responding.
+        This restores context that was lost during session resets.
+      severity: CRITICAL
+
+    - id: GMEM-003
+      name: "Update memory after every meaningful exchange"
+      rule: |
+        After every meaningful exchange in a group, the agent MUST update
+        the group's memory file:
+        - Append to "Recent Messages" section (keep last ~30 exchanges)
+        - Update "Active Tasks" section when tasks change
+        - Update "Decisions & Context" for important decisions
+        - Trim oldest messages when exceeding ~30 exchanges
+      severity: HIGH
+
+    - id: GMEM-004
+      name: "Memory file structure"
+      rule: |
+        Each group memory file must contain:
+        ```
+        # {Group Name} — Persistent Memory
+        ## Active Tasks
+        ## Decisions & Context
+        ## Recent Messages (last ~30 exchanges)
+        ```
+      severity: MEDIUM
+
+  file_convention: "memory/{group-name}-context.md"
 
 # ============================================================================
 # SECTION 7: Security Tooling
