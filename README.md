@@ -16,8 +16,9 @@ Company-wide rules for all OpenClaw agent instances. This repo is the **single s
   - [2. Development Workflow (BMad)](#2-development-workflow-bmad-method)
   - [3. BMad Workflow Files](#3-bmad-workflow-files)
   - [4. Group Scopes](#4-group-scopes)
-  - [5. Security Tooling](#5-security-tooling)
-  - [6. GitHub Repositories](#6-github-repositories)
+  - [5. Session Configuration](#5-session-configuration)
+  - [6. Security Tooling](#6-security-tooling)
+  - [7. GitHub Repositories](#7-github-repositories)
 - [Import / Export / Sync](#-import--export--sync)
 - [Versioning](#-versioning)
 - [Contributing](#-contributing)
@@ -222,7 +223,33 @@ Phase 3 (Review — agent itself):
 
 ---
 
-### 5. Security Tooling
+### 5. Session Configuration
+
+| ID | Rule | Severity |
+|----|------|----------|
+| **SESSION-001** | Group session persistence (8h idle) | 🟡 HIGH |
+| **SESSION-002** | Avoid unnecessary gateway restarts | 🟠 MEDIUM |
+
+**SESSION-001 — Group session persistence** 🟡
+> Group chat sessions use idle-based reset instead of daily reset. Default: **480 minutes (8 hours)** idle timeout. This prevents group context loss during gateway restarts (config patches, updates, etc.) which would otherwise create a new session ID and lose all prior conversation context.
+
+**Config:**
+```json
+{
+  "session": {
+    "resetByType": {
+      "group": { "mode": "idle", "idleMinutes": 480 }
+    }
+  }
+}
+```
+
+**SESSION-002 — Avoid unnecessary gateway restarts**
+> Every gateway restart re-evaluates session expiry. Batch config changes together when possible to minimize restarts and reduce the risk of session context loss in groups.
+
+---
+
+### 6. Security Tooling
 
 | Tool | Type | Install | Usage |
 |------|------|---------|-------|
@@ -252,7 +279,7 @@ Phase 3 (Review — agent itself):
 
 ---
 
-### 6. GitHub Repositories
+### 7. GitHub Repositories
 
 **Organization:** `attractsoft`
 
@@ -308,10 +335,11 @@ Schema: `MAJOR.MINOR.PATCH`
 | **Minor** | New rules added |
 | **Patch** | Clarifications, wording improvements |
 
-**Current version:** `2.0.0` (2026-02-18)
+**Current version:** `2.1.0` (2026-02-18)
 
 ### Changelog
 
+- **2.1.0** (2026-02-18): Added Session Configuration (SESSION-001, SESSION-002) — group sessions now use 8h idle timeout to survive gateway restarts.
 - **2.0.0** (2026-02-18): Complete rewrite in English. Added Group Scopes (SCOPE-001 to 003). Removed OpenClaw defaults (memory, heartbeats, group chat etiquette, formatting, workspace layout). Streamlined to company-specific rules only.
 - **1.2.0** (2026-02-18): Initial version with Security Tooling.
 

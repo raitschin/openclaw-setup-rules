@@ -18,7 +18,7 @@
 # GitHub: raitschin/openclaw-setup-rules
 # ============================================================================
 
-version: "2.0.0"
+version: "2.1.0"
 last_updated: "2026-02-18"
 updated_by: "Clark (initial export)"
 organization: "GLXY / attractsoft"
@@ -238,7 +238,38 @@ group_scopes:
   file_convention: "scopes/group-{project}-{purpose}.md"
 
 # ============================================================================
-# SECTION 5: Security Tooling
+# SECTION 5: Session Configuration
+# ============================================================================
+session:
+  description: "Session persistence settings — especially for group chats"
+
+  config:
+    resetByType:
+      group:
+        mode: "idle"
+        idleMinutes: 480  # 8 hours — group sessions survive gateway restarts
+
+  rules:
+    - id: SESSION-001
+      name: "Group session persistence"
+      rule: |
+        Group chat sessions use idle-based reset (not daily reset).
+        Default: 480 minutes (8 hours) idle timeout.
+        This prevents group context loss during gateway restarts
+        (config patches, updates) which would otherwise create a new
+        session ID and lose all prior conversation context.
+      severity: HIGH
+
+    - id: SESSION-002
+      name: "Avoid unnecessary gateway restarts"
+      rule: |
+        Every gateway restart (config.patch, update, etc.) re-evaluates
+        session expiry. Batch config changes together when possible to
+        minimize restarts and reduce the risk of session context loss.
+      severity: MEDIUM
+
+# ============================================================================
+# SECTION 7: Security Tooling
 # ============================================================================
 security_tooling:
   description: "Company-wide security scanning tools"
@@ -297,7 +328,7 @@ security_tooling:
       severity: HIGH
 
 # ============================================================================
-# SECTION 6: GitHub Repositories
+# SECTION 8: GitHub Repositories
 # ============================================================================
 repositories:
   description: "Company GitHub repos and organization"
