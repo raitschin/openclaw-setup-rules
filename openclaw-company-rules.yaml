@@ -11,16 +11,16 @@
 # out of the box and are NOT repeated here.
 #
 # Usage:
-#   1. New instance → import rules from this file into AGENTS.md
+#   1. New instance → place BOOTSTRAP.md in workspace → agent auto-configures
 #   2. Rule update  → update this file on GitHub, sync all instances
 #   3. Export       → any instance can export its rules back to this format
 #
 # GitHub: raitschin/openclaw-setup-rules
 # ============================================================================
 
-version: "2.2.0"
-last_updated: "2026-02-18"
-updated_by: "Clark (initial export)"
+version: "3.0.0"
+last_updated: "2026-02-19"
+updated_by: "Clark"
 organization: "GLXY / attractsoft"
 
 # ============================================================================
@@ -82,6 +82,7 @@ development:
         - Bug: `.github/ISSUE_TEMPLATE/bug.md`
         - Change Request: `.github/ISSUE_TEMPLATE/change-request.md`
         Labels: `feature`, `bug`, `epic`, `marketing`
+        Issues MUST be written in English.
       severity: HIGH
 
     - id: DEV-003
@@ -135,6 +136,14 @@ development:
         - `fixes #XX` — when the commit closes the issue
         - `ref #XX` — when the commit contributes to the issue
         No commits without issue references.
+      severity: HIGH
+
+    - id: DEV-008
+      name: "Issues in English"
+      rule: |
+        All GitHub issues MUST be written in English.
+        This includes title, description, acceptance criteria, and comments.
+        No exceptions — even for German-speaking teams.
       severity: HIGH
 
 # ============================================================================
@@ -247,7 +256,7 @@ session:
     resetByType:
       group:
         mode: "idle"
-        idleMinutes: 480  # 8 hours — group sessions survive gateway restarts
+        idleMinutes: 480
 
   rules:
     - id: SESSION-001
@@ -255,69 +264,45 @@ session:
       rule: |
         Group chat sessions use idle-based reset (not daily reset).
         Default: 480 minutes (8 hours) idle timeout.
-        This prevents group context loss during gateway restarts
-        (config patches, updates) which would otherwise create a new
-        session ID and lose all prior conversation context.
+        This prevents group context loss during gateway restarts.
       severity: HIGH
 
     - id: SESSION-002
       name: "Avoid unnecessary gateway restarts"
       rule: |
-        Every gateway restart (config.patch, update, etc.) re-evaluates
-        session expiry. Batch config changes together when possible to
-        minimize restarts and reduce the risk of session context loss.
+        Every gateway restart re-evaluates session expiry.
+        Batch config changes together when possible to minimize restarts.
       severity: MEDIUM
 
 # ============================================================================
 # SECTION 6: Group Memory Persistence
 # ============================================================================
 group_memory:
-  description: "Persistent memory files for group chats to survive session resets and gateway restarts"
-  severity: HIGH
+  description: "Persistent memory files for group chats that survive restarts"
 
   rules:
     - id: GMEM-001
       name: "Every group gets a persistent memory file"
       rule: |
-        Every group chat MUST have a persistent memory file at:
-          `memory/{group-name}-context.md`
-        This file survives session resets, gateway restarts, and compactions.
-        The scope file for the group MUST reference this memory file.
+        Every group chat MUST have a persistent memory file at
+        `memory/{group-name}-context.md`. The scope file for the group
+        MUST reference this memory file.
       severity: HIGH
 
     - id: GMEM-002
       name: "Read memory on session start"
       rule: |
-        At the START of every group session (or when the session appears
-        empty/new with no prior messages visible), the agent MUST read
-        the group's persistent memory file BEFORE responding.
-        This restores context that was lost during session resets.
+        At the START of every group session the agent MUST read the
+        group's persistent memory file BEFORE responding.
       severity: CRITICAL
 
     - id: GMEM-003
-      name: "Update memory after every meaningful exchange"
+      name: "Update memory after meaningful exchanges"
       rule: |
-        After every meaningful exchange in a group, the agent MUST update
-        the group's memory file:
-        - Append to "Recent Messages" section (keep last ~30 exchanges)
-        - Update "Active Tasks" section when tasks change
-        - Update "Decisions & Context" for important decisions
-        - Trim oldest messages when exceeding ~30 exchanges
+        After every meaningful exchange, update the memory file:
+        append to Recent Messages (keep last ~30), update Active Tasks,
+        update Decisions & Context for important decisions.
       severity: HIGH
-
-    - id: GMEM-004
-      name: "Memory file structure"
-      rule: |
-        Each group memory file must contain:
-        ```
-        # {Group Name} — Persistent Memory
-        ## Active Tasks
-        ## Decisions & Context
-        ## Recent Messages (last ~30 exchanges)
-        ```
-      severity: MEDIUM
-
-  file_convention: "memory/{group-name}-context.md"
 
 # ============================================================================
 # SECTION 7: Security Tooling
@@ -327,12 +312,11 @@ security_tooling:
 
   tools:
     - name: "Semgrep"
-      type: "SAST (Static Application Security Testing)"
+      type: "SAST"
       install: "pip install semgrep"
       usage:
         quick_scan: 'semgrep --config "p/typescript" <path>'
         full_scan: 'semgrep --config auto <path>'
-        owasp: 'semgrep --config "p/owasp-top-ten" <path>'
       rulesets:
         - "p/typescript"
         - "p/javascript"
@@ -342,7 +326,7 @@ security_tooling:
         - "p/security-audit"
 
     - name: "Snyk"
-      type: "SCA (Software Composition Analysis) + SAST"
+      type: "SCA + SAST"
       install: "npm install -g snyk"
       auth: "snyk auth (browser OAuth or API token)"
       usage:
@@ -355,27 +339,22 @@ security_tooling:
       name: "Security scan before merge"
       rule: |
         Before every merge to staging or main:
-        - Run Semgrep SAST scan (at least `p/typescript` or `--config auto`)
-        - Run Snyk dependency scan (`snyk test`) — no critical/high vulnerabilities
+        - Semgrep SAST scan
+        - Snyk dependency scan — no critical/high vulnerabilities
         - Blocking findings must be resolved
       severity: HIGH
 
     - id: SEC-002
       name: "Regular scans"
       rule: |
-        At least weekly:
-        - `snyk monitor` on all active repos
-        - Semgrep full scan (`--config auto`)
-        - Document results in daily notes
+        At least weekly: snyk monitor + Semgrep full scan on all active repos.
       severity: MEDIUM
 
     - id: SEC-003
       name: "New dependencies"
       rule: |
-        For every new dependency:
-        - Run `snyk test` before committing
-        - Check license compatibility
-        - Verify no known vulnerabilities
+        For every new dependency: snyk test before committing.
+        Check license compatibility.
       severity: HIGH
 
 # ============================================================================
@@ -406,6 +385,14 @@ repositories:
       full: "attractsoft/anymize-context"
       description: "Context repo: roadmap, pricing, BMad workflow"
 
+  team:
+    - name: "Nikolai Raitschew"
+      github: "Nraitschew"
+    - name: "Nick"
+      github: "BurDeBug"
+    - name: "Raitschin Raitschew"
+      github: "raitschin"
+
   labels:
     - "feature"
     - "bug"
@@ -413,36 +400,145 @@ repositories:
     - "marketing"
 
 # ============================================================================
+# SECTION 9: Project-Specific Custom Instructions
+# ============================================================================
+# Each project can define custom instructions that only apply to instances
+# working on that project. During setup (via BOOTSTRAP.md), the agent asks
+# which projects this instance handles and only imports the relevant sections.
+#
+# Structure per project:
+#   - id: unique identifier (used in setup selection)
+#   - name: display name
+#   - repo: GitHub repo (if applicable)
+#   - description: one-line description
+#   - custom_instructions: project-specific rules, conventions, context
+#   - workspace_files: additional files to generate (SOUL.md hints, etc.)
+#
+# To add a new project: add an entry below and bump the version.
+# ============================================================================
+projects:
+  - id: speaktomycrm
+    name: "SpeakToMyCRM"
+    repo: "attractsoft/speaktomycrm"
+    description: "Voice-to-CRM via Telegram — MVP live, Agent-Architektur"
+    custom_instructions: |
+      # Add project-specific rules here.
+      # Example: deployment hooks, tech stack notes, special conventions.
+
+  - id: florentin
+    name: "florentin.app"
+    repo: "attractsoft/florentin-app"
+    description: "Automation workflows to API products (SaaS enabler)"
+    custom_instructions: |
+      # Add project-specific rules here.
+
+  - id: anymize
+    name: "anymize.ai"
+    repo: "attractsoft/anymize"
+    description: "GDPR-compliant LLM anonymization"
+    custom_instructions: |
+      # Add project-specific rules here.
+
+  - id: anyclaw
+    name: "AnyClaw"
+    repo: "attractsoft/anyclaw"
+    description: "Browser-based AI assistant platform with GDPR anonymization (on OpenClaw stack)"
+    custom_instructions: |
+      # Add project-specific rules here.
+
+  - id: anychat
+    name: "AnyChat"
+    repo: "attractsoft/anychat"
+    description: "Chat frontend (part of anymize.ai)"
+    custom_instructions: |
+      # Add project-specific rules here.
+
+  - id: edaira
+    name: "edaira.ai"
+    repo: null
+    description: "AI-powered school assignment correction (investment)"
+    custom_instructions: |
+      # Add project-specific rules here.
+
+  - id: peuka
+    name: "peuka.com"
+    repo: null
+    description: "Airbnb for parking spots (investment)"
+    custom_instructions: |
+      # Add project-specific rules here.
+
+# ============================================================================
+# SECTION 10: Instance Setup (Bootstrap)
+# ============================================================================
+# When a new OpenClaw instance is created, place BOOTSTRAP.md in its workspace.
+# The agent reads it on first start and auto-configures based on this file.
+# ============================================================================
+bootstrap:
+  description: "Automated setup flow for new instances"
+
+  generated_files:
+    - "AGENTS.md"    # Global rules + selected project rules
+    - "SOUL.md"      # Agent personality (from template or custom)
+    - "USER.md"      # Owner info (provided during setup)
+    - "MEMORY.md"    # Empty long-term memory
+    - "TOOLS.md"     # Local tool notes (starts empty)
+
+  setup_flow:
+    - step: 1
+      action: "Read openclaw-company-rules.yaml"
+    - step: 2
+      action: "Ask: Who is the owner of this instance? (Name, role, timezone)"
+    - step: 3
+      action: "Ask: Which projects does this instance handle?"
+      note: "Show list from projects section. Multiple selection allowed."
+    - step: 4
+      action: "Generate AGENTS.md with global rules + selected project custom instructions"
+    - step: 5
+      action: "Generate SOUL.md (use template or ask for customization)"
+    - step: 6
+      action: "Generate USER.md from owner info"
+    - step: 7
+      action: "Generate empty MEMORY.md and TOOLS.md"
+    - step: 8
+      action: "Delete BOOTSTRAP.md"
+    - step: 9
+      action: "Confirm setup complete and summarize configuration"
+
+# ============================================================================
 # META: How to use this file
 # ============================================================================
 #
-# IMPORT (new instance):
+# NEW INSTANCE (recommended — automated):
+#   1. Create workspace directory
+#   2. Copy openclaw-company-rules.yaml into the workspace
+#   3. Copy BOOTSTRAP.md into the workspace
+#   4. Start OpenClaw → agent reads BOOTSTRAP.md → auto-configures
+#   5. Agent asks which projects → generates all workspace files
+#   6. Done!
+#
+# NEW INSTANCE (manual):
 #   1. Copy openclaw-company-rules.yaml to the workspace
 #   2. Instruct the agent:
 #      "Import the company rules from openclaw-company-rules.yaml
-#       into your AGENTS.md. Personal sections (SOUL.md, USER.md)
-#       remain individual."
+#       into your AGENTS.md. I work on projects: X, Y, Z.
+#       Personal sections (SOUL.md, USER.md) remain individual."
 #   3. The agent merges the rules into its AGENTS.md
 #
-# EXPORT (existing instance):
-#   1. Instruct the agent:
-#      "Export your current company rules from AGENTS.md
-#       to openclaw-company-rules.yaml format. No personal data."
-#   2. The agent updates openclaw-company-rules.yaml with a new version
-#
-# SYNC (reconcile):
-#   1. Pull current version from GitHub
+# UPDATE RULES:
+#   1. Pull latest from GitHub
 #   2. Instruct the agent:
 #      "Reconcile your AGENTS.md with openclaw-company-rules.yaml.
 #       Show differences. Adopt new rules, keep personal customizations."
-#   3. Bump version + commit
+#   3. Agent updates, bump version + commit
+#
+# ADD PROJECT:
+#   1. Add entry under `projects:` section
+#   2. Fill in custom_instructions
+#   3. Update README.md
+#   4. Bump version, commit, push
+#   5. All instances can pick up the new project on next sync
 #
 # VERSIONING:
 #   - Major: Breaking changes (rules removed or fundamentally changed)
-#   - Minor: New rules added
+#   - Minor: New rules or sections added
 #   - Patch: Clarifications, wording improvements
-#
-# IMPORTANT:
-#   When updating this file, the README.md MUST also be updated.
-#   No YAML change without a README change. The README is the
-#   human-readable documentation of all rules.
